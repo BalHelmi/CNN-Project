@@ -1,7 +1,7 @@
 import os 
 
 import tensorflow as tf
-from keras import layers
+from keras import layers, regularizers
 from keras.datasets import cifar10
 from keras.losses import SparseCategoricalCrossentropy
 from keras.optimizers import Adam
@@ -14,28 +14,28 @@ x_test = x_test.astype("float32") / 255.0
 def my_model():
     inputs = tf.keras.Input(shape=(32, 32, 3))
     
-    x = layers.Conv2D(32, 3)(inputs)
+    x = layers.Conv2D(32, 3, kernel_regularizer=regularizers.L2(0.01))(inputs)
     
     x = layers.BatchNormalization()(x)
     x = tf.keras.activations.relu(x)
     
     x = layers.MaxPool2D()(x)
     
-    x = layers.Conv2D(64, 5, padding='same')(x)
+    x = layers.Conv2D(64, 5, padding='same', kernel_regularizer=regularizers.L2(0.01))(x)
     
     x = layers.BatchNormalization()(x)
     x = tf.keras.activations.relu(x)
     
-    x = layers.Conv2D(128, 3)(x)
+    x = layers.Conv2D(128, 3, kernel_regularizer=regularizers.L2(0.01))(x)
     
     x = layers.BatchNormalization()(x)
     x = tf.keras.activations.relu(x)
     
     x = layers.Flatten()(x)
     
-    x = layers.Dense(64, activation='relu')(x)
+    x = layers.Dense(64, activation='relu', kernel_regularizer=regularizers.L2(0.01))(x)
     
-    
+    x = layers.Dropout(0.5)
     outputs = layers.Dense(10)(x)
     
     model = tf.keras.Model(inputs = inputs, outputs = outputs)
@@ -68,5 +68,5 @@ model.compile(
 )
 
 model.fit(x_train, y_train, batch_size=64, epochs=3, verbose=2)
-model.evalute(x_test, y_test, batch_size=64, verbose=2)
+model.evaluate(x_test, y_test, batch_size=64, verbose=2)
 print(model.summary())
